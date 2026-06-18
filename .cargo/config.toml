@@ -1,0 +1,4 @@
+[env]
+# Keep LLVM coverage raw profiles out of the repository root for instrumented
+# test and binary runs launched through cargo.
+LLVM_PROFILE_FILE = { value = "target/llvm-cov/default_%m_%p.profraw", relative = true }

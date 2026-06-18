@@ -1,0 +1,22 @@
+[package]
+name = "eventfs-fuse"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+
+[features]
+default = []
+jetstream-tests = ["eventfs-transport/jetstream-tests"]
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive", "env"] }
+eventfs-protocol = { path = "../eventfs-protocol" }
+eventfs-transport = { path = "../eventfs-transport" }
+fuser = { version = "0.14", features = ["abi-7-30"] }
+libc = "0.2"
+serde_json = { workspace = true }
+tracing = "0.1"
+
+[dev-dependencies]
+tempfile = { workspace = true }

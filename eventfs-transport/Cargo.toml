@@ -1,0 +1,23 @@
+[package]
+name = "eventfs-transport"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+
+[features]
+default = []
+jetstream-tests = []
+
+[dependencies]
+base64 = "0.13"
+eventfs-protocol = { path = "../eventfs-protocol" }
+fs2 = "0.4"
+nats = "0.25"
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = "2.0"
+tracing = "0.1"
+
+[dev-dependencies]
+tempfile = { workspace = true }

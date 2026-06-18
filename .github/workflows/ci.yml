@@ -1,0 +1,126 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  product-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libfuse3-dev \
+            protobuf-compiler
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy, llvm-tools-preview
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo tools
+        run: |
+          set -euo pipefail
+          cargo install just --locked
+          cargo install cargo-llvm-cov --locked
+
+      - name: Product gate
+        run: just check
+
+      - name: Release surface guard
+        run: just release-surface-guard
+
+      - name: Unfiltered coverage snapshot
+        if: always()
+        run: just coverage-full-summary
+
+  broker-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libfuse3-dev \
+            protobuf-compiler
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install just
+        run: cargo install just --locked
+
+      - name: Broker-backed JetStream integration
+        run: just integration
+
+  fuse-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libfuse3-dev \
+            fuse3 \
+            protobuf-compiler
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install just
+        run: cargo install just --locked
+
+      - name: Check FUSE capability
+        id: fuse
+        run: |
+          set -euo pipefail
+          if [[ -e /dev/fuse ]]; then
+            echo "available=true" >>"${GITHUB_OUTPUT}"
+          else
+            echo "::notice::/dev/fuse is unavailable on this runner; FUSE smoke is skipped for this capability-gated CI job."
+            echo "available=false" >>"${GITHUB_OUTPUT}"
+          fi
+
+      - name: FUSE smoke
+        if: steps.fuse.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          docker compose -f infra/nats/docker-compose.yml up -d
+          just smoke
+
+      - name: FUSE smoke skipped
+        if: steps.fuse.outputs.available != 'true'
+        run: |
+          set -euo pipefail
+          echo "FUSE smoke did not run because /dev/fuse is unavailable."
+          echo "Release gating must use scripts/release-check.sh --strict or a FUSE-capable runner."

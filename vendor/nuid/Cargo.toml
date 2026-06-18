@@ -1,0 +1,8 @@
+[package]
+name = "nuid"
+version = "0.3.2"
+edition = "2021"
+
+[dependencies]
+lazy_static = "1.5"
+

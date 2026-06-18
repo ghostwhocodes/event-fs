@@ -1,0 +1,11 @@
+[package]
+name = "eventfs-protocol"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+
+[dependencies]
+libc = "0.2"
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = "2.0"

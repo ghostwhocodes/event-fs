@@ -1,5 +1,13 @@
 # EventFS
 
+<p align="center">
+  <img src="./.github/assets/banner.webp" alt="EventFS banner">
+</p>
+
+<p align="center">
+  <a href="https://ghost-who-codes.blog/open-source/event-fs/">Project page on Ghost Who Codes</a>
+</p>
+
 EventFS mounts NATS JetStream as a filesystem. JetStream is the system of
 record; the FUSE process is the local interface for shells, containers, humans,
 and agents.
